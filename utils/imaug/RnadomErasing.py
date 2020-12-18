@@ -2,12 +2,12 @@ import tensorflow as tf
 
 
 @tf.function
-def random_erasing(img, label, probability=0.5, sl=0.02, sh=0.4, r1=0.3, method='random'):
+def random_erasing(img, mask, probability=0.5, sl=0.02, sh=0.4, r1=0.3, method='random'):
 
     """
 
     :param img:
-    :param label:
+    :param mask:
     :param probability: 擦除的概率
     :param sl: 擦除面积比率的下界
     :param sh: 擦除面积比率的上界
@@ -16,7 +16,7 @@ def random_erasing(img, label, probability=0.5, sl=0.02, sh=0.4, r1=0.3, method=
     :return:
     """
     if tf.random.uniform([]) > probability:
-        return img, label
+        return img, mask
 
     img_width = img.shape[1]
     img_height = img.shape[0]
@@ -46,11 +46,11 @@ def random_erasing(img, label, probability=0.5, sl=0.02, sh=0.4, r1=0.3, method=
     part1 = tf.slice(img, [0, 0, 0], [x1, img_width, img_channels])  # first row
     part2 = tf.slice(img, [x1, 0, 0], [h, y1, img_channels])  # second row 1
 
-    if method is 'black':
+    if method == 'black':
         part3 = tf.zeros((h, w, img_channels), dtype=tf.float32)  # second row 2
-    elif method is 'white':
+    elif method == 'white':
         part3 = tf.ones((h, w, img_channels), dtype=tf.float32)
-    elif method is 'random':
+    elif method == 'random':
         part3 = tf.random.uniform((h, w, img_channels), dtype=tf.float32)
     else:
         raise print('Wrong method parameter')
@@ -61,4 +61,4 @@ def random_erasing(img, label, probability=0.5, sl=0.02, sh=0.4, r1=0.3, method=
     middle_row = tf.concat([part2, part3, part4], axis=1)
     img = tf.concat([part1, middle_row, part5], axis=0)
 
-    return img, label
+    return img, mask

@@ -28,7 +28,7 @@ _C.DATASET.SIZE = (512, 512)
 _C.DATASET.CHANNELS = 3
 _C.DATASET.N_CLASSES = 2
 _C.DATASET.LABELS = ['background', 'yang']
-_C.DATASET.NUM_TRAIN = 4000
+_C.DATASET.NUM_TRAIN = 4475
 
 _C.SCHEDULER = CN()
 _C.SCHEDULER.LR_TYPE = 'exponential'    # piecewise, cosine_decay_restart

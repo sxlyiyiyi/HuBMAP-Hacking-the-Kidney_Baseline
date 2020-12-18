@@ -24,11 +24,11 @@ def train():
     train_dataset = get_dataset(cfg.DATASET.TRAIN_DATA, cfg, is_training=True)
     val_dataset = get_dataset(cfg.DATASET.VAL_DATA, cfg)
 
-    # for batch, (images, labels) in enumerate(train_dataset):
-    #     for i in range(cfg.TRAIN.BATCH_SIZE):
-    #         img = np.array(images[i, :, :, :] * 255).astype(np.int64)
-    #         label = np.array(labels[i, :, :, 0]).astype(np.int64)
-    #         vis_segmentation(img, label, label_names=cfg.DATASET.LABELS)
+    for batch, (images, labels) in enumerate(train_dataset):
+        for i in range(cfg.TRAIN.BATCH_SIZE):
+            img = np.array(images[i, :, :, :] * 255).astype(np.int64)
+            label = np.array(labels[i, :, :, 0]).astype(np.int64)
+            vis_segmentation(img, label, label_names=cfg.DATASET.LABELS)
 
     # 模型搭建和损失函数配置
     model = create_model(cfg, name=cfg.MODEL_NAME, backbone=cfg.BACKBONE_NAME)

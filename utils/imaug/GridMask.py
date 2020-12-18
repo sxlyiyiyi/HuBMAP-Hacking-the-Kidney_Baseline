@@ -105,10 +105,13 @@ def GridMaskGen(image_height, image_width, d1, d2, rotate_angle=1, ratio=0.5):
 
 # GridMask
 @tf.function
-def gridmask(img, label):
-    AugParams = {'d1': 80, 'd2': 130, 'rotate': 20, 'ratio': 0.4}
+def gridmask(img, label, d1=80, d2=130, rotate=20, ratio=0.4):
+    """
+    填充尺寸为 random.uniform(d1, d2) * ratio
+
+    """
     img_h, img_w = img.get_shape()[0], img.get_shape()[1]
-    mask = GridMaskGen(img_h, img_w, AugParams['d1'], AugParams['d2'], AugParams['rotate'], AugParams['ratio'])
+    mask = GridMaskGen(img_h, img_w, d1, d2, rotate, ratio)
     img = img * tf.cast(mask, tf.float32)
 
     return img, label

@@ -40,3 +40,12 @@
 - util.py
     - add_regularization: 添加正则损失
     
+- 支持的数据增广：
+    - cutmix: 随机拼接两张图像
+    - random_zoom: 随机缩放, 居中裁剪
+    - random_resizedcrop: 随机缩放, 随机裁剪
+    - StepScaleCrop: 随机按一定步长缩放, 随机裁剪
+    - gridmask: 
+    - cutout:
+    - random_erasing: 
+    
