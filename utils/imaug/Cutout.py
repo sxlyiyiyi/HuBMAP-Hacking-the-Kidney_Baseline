@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 
+@tf.function
 def random_cutout(images,
                   labels,
                   mask_size,
