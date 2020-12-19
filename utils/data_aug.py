@@ -5,7 +5,6 @@ from utils.imaug.Cutout import random_cutout
 from utils.imaug.GridMask import gridmask
 from utils.imaug.CutMix import cutmix
 from utils.imaug.RnadomErasing import random_erasing
-from utils.imaug.Flip import random_flip
 
 
 # 基础数据增广,颜色方面（调节对比度，调节亮度，调节Hue，添加饱和度，添加高斯噪声等
@@ -24,6 +23,16 @@ def adjust_color(img, mask):
     # img = tf.add(img, noise)
     # 将img限制在 [0, 1]
     img = tf.clip_by_value(img, 0, 1)
+
+    return img, mask
+
+
+# 随机翻转
+@tf.function
+def random_flip(img, mask, vertical=False):
+    img = tf.image.random_flip_left_right(img)
+    if vertical is True:
+        img = tf.image.random_flip_up_down(img)
 
     return img, mask
 
