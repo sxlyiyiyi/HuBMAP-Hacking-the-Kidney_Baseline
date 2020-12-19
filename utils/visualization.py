@@ -132,21 +132,20 @@ def get_color_map_list(num_classes):
     return color_map
 
 
-def gray2pseudo_color(dir_or_file, output_dir):
+def gray2pseudo_color(input_dir, output_dir):
     """将灰度标注图片转换为伪彩色图片"""
-    input = dir_or_file
-    output_dir = output_dir
+
     if not osp.exists(output_dir):
         os.makedirs(output_dir)
         print('Creating colorful label directory:', output_dir)
 
     color_map = get_color_map_list(256)
-    if os.path.isdir(input):
-        for fpath, dirs, fs in os.walk(input):
+    if os.path.isdir(input_dir):
+        for fpath, dirs, fs in os.walk(input_dir):
             for f in fs:
                 try:
                     grt_path = osp.join(fpath, f)
-                    _output_dir = fpath.replace(input, '')
+                    _output_dir = fpath.replace(input_dir, '')
                     _output_dir = _output_dir.lstrip(os.path.sep)
 
                     im = Image.open(grt_path)
