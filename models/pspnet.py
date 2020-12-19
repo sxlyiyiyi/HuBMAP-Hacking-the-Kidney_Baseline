@@ -2,7 +2,6 @@ import tensorflow as tf
 from tensorflow.keras import backend
 from tensorflow.keras import layers
 from tensorflow.keras import models
-import tensorflow.keras.utils as keras_utils
 
 from models.backbone.resnet import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
 from models.backbone.resnext import ResNeXt50, ResNeXt101
