@@ -1,4 +1,3 @@
-from keras_applications import get_submodules_from_kwargs
 import tensorflow as tf
 from tensorflow.keras import backend
 from tensorflow.keras import layers

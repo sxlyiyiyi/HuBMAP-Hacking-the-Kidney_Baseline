@@ -1,7 +1,6 @@
 # coding=utf-8
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
-import keras.backend as K
 import tensorflow as tf
 
 
