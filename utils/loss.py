@@ -1,6 +1,4 @@
 import tensorflow as tf
-import timeit
-from tensorflow.keras import backend as K
 
 
 # 交叉熵损失函数

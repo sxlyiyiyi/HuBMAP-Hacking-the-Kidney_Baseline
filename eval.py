@@ -13,19 +13,20 @@ from utils.util import set_device
 
 
 # 图像转rle编码
-def mask2rle(mask, n=1):
-    pixels = mask.T.flatten()
-    encs = []
-    for i in range(1, n + 1):
-        p = (pixels == i).astype(np.int8)
-        if p.sum() == 0:
-            encs.append(np.nan)
-        else:
-            p = np.concatenate([[0], p, [0]])
-            runs = np.where(p[1:] != p[:-1])[0] + 1
-            runs[1::2] -= runs[::2]
-            encs.append(' '.join(str(x) for x in runs))
-    return encs
+def mask2rle(img):
+    """
+    Efficient implementation of mask2rle, from @paulorzp
+    https://www.kaggle.com/xhlulu/efficient-mask2rle
+    https://www.kaggle.com/paulorzp/rle-functions-run-lenght-encode-decode
+    --
+    img: numpy array, 1 - mask, 0 - background
+    Returns run length as string formated
+    """
+    pixels = img.T.flatten()
+    pixels = np.pad(pixels, ((1, 1), ))
+    runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
+    runs[1::2] -= runs[::2]
+    return ' '.join(str(x) for x in runs)
 
 
 def eval_img():

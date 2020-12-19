@@ -5,7 +5,6 @@ from tensorflow.keras import layers
 from tensorflow.keras import models
 from tensorflow.keras import utils as keras_utils
 
-from keras_applications import imagenet_utils
 
 ModelParams = collections.namedtuple(
     'ModelParams',
@@ -582,10 +581,6 @@ def SENet154(input_shape=None, input_tensor=None, weights=None, classes=1000, in
         weights=weights,
         **kwargs
     )
-
-
-def preprocess_input(x, **kwargs):
-    return imagenet_utils.preprocess_input(x, mode='torch', **kwargs)
 
 
 setattr(SEResNet50, '__doc__', SENet.__doc__)

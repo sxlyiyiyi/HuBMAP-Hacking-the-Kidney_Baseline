@@ -4,6 +4,11 @@ from matplotlib import gridspec
 import numpy as np
 import cv2
 import pylab
+import os
+import os.path as osp
+import sys
+import numpy as np
+from PIL import Image
 # 使用系统字体，设置plot显示中文
 plt.rcParams['font.sans-serif'] = ['Fangsong']
 
@@ -101,16 +106,63 @@ def vis_segmentation(image, seg_map, label_names):
     plt.pause(0.05)
 
 
-if __name__ == '__main__':
-    LABEL_NAME = np.asarray(['background', 'nut_center', 'nut_center_n'])
-    FULL_LABEL_MAP = np.arange(len(LABEL_NAME)).reshape(len(LABEL_NAME), 1)
-    FULL_COLOR_MAP = label_to_color_image(FULL_LABEL_MAP)
+def get_color_map_list(num_classes):
+    """ Returns the color map for visualizing the segmentation mask,
+        which can support arbitrary number of classes.
+    Args:
+        num_classes: Number of classes
+    Returns:
+        The color map
+    Examples:
+        color_map = get_color_map_list(256)
+        pred_mask = PILImage.fromarray(res_map.astype(np.uint8), mode='P')
+        pred_mask.putpalette(color_map)
+    """
+    color_map = num_classes * [0, 0, 0]
+    for i in range(0, num_classes):
+        j = 0
+        lab = i
+        while lab:
+            color_map[i * 3] |= (((lab >> 0) & 1) << (7 - j))
+            color_map[i * 3 + 1] |= (((lab >> 1) & 1) << (7 - j))
+            color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
+            j += 1
+            lab >>= 3
 
-    imgfile = '../test_image/Pic_2020_06_10_161901_blockId#42336.bmp'
-    pngfile = '../test_image/Pic_2020_06_10_161901_blockId#42336.npy'
-    img = cv2.imread(imgfile, 1)
-    label = np.load(pngfile)
-    img = img[:, :, ::-1]
-    # seg_map = cv2.imread(label, 0)
-    vis_segmentation(img, label, LABEL_NAME)
-    print('Done.')
+    return color_map
+
+
+def gray2pseudo_color(dir_or_file, output_dir):
+    """将灰度标注图片转换为伪彩色图片"""
+    input = dir_or_file
+    output_dir = output_dir
+    if not osp.exists(output_dir):
+        os.makedirs(output_dir)
+        print('Creating colorful label directory:', output_dir)
+
+    color_map = get_color_map_list(256)
+    if os.path.isdir(input):
+        for fpath, dirs, fs in os.walk(input):
+            for f in fs:
+                try:
+                    grt_path = osp.join(fpath, f)
+                    _output_dir = fpath.replace(input, '')
+                    _output_dir = _output_dir.lstrip(os.path.sep)
+
+                    im = Image.open(grt_path)
+                    lbl = np.asarray(im)
+
+                    lbl_pil = Image.fromarray(lbl.astype(np.uint8), mode='P')
+                    lbl_pil.putpalette(color_map)
+
+                    real_dir = osp.join(output_dir, _output_dir)
+                    if not osp.exists(real_dir):
+                        os.makedirs(real_dir)
+                    new_grt_path = osp.join(real_dir, f)
+
+                    lbl_pil.save(new_grt_path)
+                    print('New label path:', new_grt_path)
+                except:
+                    continue
+    else:
+        print('It\'s not a dir')

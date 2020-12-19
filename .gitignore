@@ -28,3 +28,11 @@ dataset/record/val.record-00000-of-00001
 dataset/val.txt
 dataset/utils.py
 dataset/train.txt
+*.index
+checkpoint/unet_seresnext50/logs/log_plain.txt
+checkpoint/unet_seresnext50/logs/log.txt
+checkpoint/unet_seresnext50/logs/events.out.tfevents.1608164566.interactive15763.15144.16608.v2
+checkpoint/unet_seresnext50/ckpt-81.data-00000-of-00001
+checkpoint/unet_seresnext50/checkpoint
+checkpoint/unet_seresnext50/logs/log_plain.txt
+checkpoint/unet_seresnext50/logs/log.txt
