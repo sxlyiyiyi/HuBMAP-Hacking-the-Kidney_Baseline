@@ -1,15 +1,12 @@
-import numpy as np
-import cv2
 import os
-import tensorflow as tf
-import tifffile as tiff
 import pandas as pd
-from PIL import Image
-from models.model_summary import create_model
-from config import cfg
-from tqdm import tqdm
-from utils.visualization import vis_segmentation
-from utils.util import set_device
+import sys
+import cv2
+import numpy as np
+import tifffile as tiff
+from tensorflow.keras.models import load_model
+
+IMAGE_SIZE = 384
 
 
 # 图像转rle编码
@@ -29,30 +26,46 @@ def mask2rle(img):
     return ' '.join(str(x) for x in runs)
 
 
-def eval_img():
+def my_modelname():
+    currentpath = os.path.dirname(sys.argv[0])
+    model = load_model(os.path.join(currentpath, 'model.h5'), compile=False)
+    return model
+
+
+# 预测未知图片
+# 构建字典
+def pred_data(model, path_img_test):
+    # 初始化结果文件，定义表头为id,label
+    res = ['id,label']
+    class_dict = {0: 'neg', 1: 'pos'}
+    # 预测图片标签
+    for pathi in os.listdir(path_img_test):
+        # 合成文件路径
+        name_img = os.path.join(path_img_test, pathi)
+        # opencv读取图片
+        test_image = cv2.imread(name_img)
+        test_image = cv2.cvtColor(test_image, cv2.COLOR_BGR2RGB) / 255
+        test_image = cv2.resize(test_image, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_LINEAR)
+        # 预测
+        test_image = np.expand_dims(test_image, axis=0)
+        probs = model.predict(test_image)
+        pred_class = np.argmax(probs)
+        pred_class = class_dict[pred_class]
+        res.append(pathi.split('.')[0] + ',' + str(pred_class))
+
     tiff_dir = './dataset/hubmap-kidney-segmentation/test'
 
     test_mask_path = './result/'
     if not os.path.isdir(test_mask_path):
         os.makedirs(test_mask_path)
     target_size = (512, 512)
-    stride = 512      # stride 应该大于等于 1/2 target_size, 小于等于target_size
+    stride = 512  # stride 应该大于等于 1/2 target_size, 小于等于target_size
     hstride = stride // 2
     dis_wh = (target_size[0] - stride) // 2
     resize = 0.5
 
     test = pd.DataFrame(columns=['id', 'predicted'])
 
-    set_device()
-    model = create_model(cfg, name=cfg.MODEL_NAME, backbone=cfg.BACKBONE_NAME)
-
-    checkpoint = tf.train.Checkpoint(step=tf.Variable(0), net=model)
-    latest_checkpoint = tf.train.latest_checkpoint(cfg.CKPT_DIR)  # 会自动找到最近保存的变量文件
-    if latest_checkpoint is not None:
-        print("restore successful")
-        checkpoint.restore(latest_checkpoint)  # 从文件恢复模型参数
-
-    @tf.function
     def tta_interfence(y):
         y = y / 255.
         out_ = model(y, training=False)
@@ -106,18 +119,10 @@ def eval_img():
                 png[topleft_y + dis_wh:buttomright_y - dis_wh, topleft_x + dis_wh:buttomright_x - dis_wh] = \
                     out[dis_wh:target_size[0] - dis_wh, dis_wh:target_size[1] - dis_wh]
 
-                x = out[dis_wh:target_size[0] - dis_wh, dis_wh:target_size[1] - dis_wh]
-
         png = png[hstride:new_h - hstride, hstride:new_w - hstride]
         png = png[:h, :w]
         # png = png * 255
         png = cv2.resize(png, (ww, hh), cv2.INTER_NEAREST)
-        cv2.imwrite(test_mask_path + img[:-5] + '_mask.png', png * 255)
-
-        image_old = image_old[hstride:new_h - hstride, hstride:new_w - hstride]
-        image_old = image_old[:h, :w]
-        image_old = cv2.resize(image_old, (ww, hh))
-        cv2.imwrite(test_mask_path + img[:-5] + '.jpg', image_old)
 
         encs = mask2rle(png)
         new = pd.DataFrame({'id': [img], 'predicted': [encs]}, index=[1])
@@ -128,5 +133,17 @@ def eval_img():
     test.to_csv('submission.csv', sep=',', index=False)
 
 
-if __name__ == '__main__':
-    eval_img()
+def main(path_img_test, path_submit):
+    # 载入模型
+    model = my_modelname()
+    # 预测图片
+    result = pred_data(model, path_img_test)
+    # 写出预测结果
+    with open(path_submit, 'w') as f:
+        f.write('\n'.join(result) + '\n')
+
+
+if __name__ == "__main__":
+    path_img_test = sys.argv[1]
+    path_submit = sys.argv[2]
+    main(path_img_test, path_submit)
